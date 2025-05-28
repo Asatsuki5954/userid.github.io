@@ -2,215 +2,111 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>업적 표</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>업적 보기</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f8ff;
+      font-family: 'Arial', sans-serif;
+      background: #e0f7fa;
+      margin: 0;
       padding: 20px;
     }
-
     h1 {
-      text-align: center;
-      color: #4682b4;
+      color: #00796b;
     }
-
     table {
-      border-collapse: collapse;
       width: 100%;
-      max-width: 800px;
-      margin: 0 auto 20px auto;
+      border-collapse: collapse;
+      margin-top: 10px;
       background-color: #ffffff;
-      box-shadow: 0 0 10px rgba(0, 128, 255, 0.2);
     }
-
     th, td {
-      border: 1px solid #add8e6;
-      text-align: center;
+      border: 1px solid #b2ebf2;
       padding: 10px;
+      text-align: center;
     }
-
-    tr:first-child td {
-      background-color: #d0ecff;
-      font-weight: bold;
+    th {
+      background-color: #b2ebf2;
     }
-
     .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      margin: 10px 0;
     }
-
     .button-group button {
-      background-color: #87cefa;
-      color: white;
+      background-color: #4dd0e1;
       border: none;
-      padding: 10px 16px;
-      border-radius: 5px;
+      color: white;
+      padding: 10px 20px;
+      margin-right: 5px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      border-radius: 5px;
     }
-
-    .button-group button:hover {
-      background-color: #00bfff;
+    .button-group button.active {
+      background-color: #00796b;
     }
-
-    .data-table.hidden {
-      display: none;
-    }
-
-    /* 반응형 */
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-
-      table {
-        font-size: 14px;
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
-
-      .button-group {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .button-group button {
-        width: 100%;
-        margin-bottom: 10px;
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        font-size: 12px;
       }
     }
   </style>
-  <script>
-    function showTable(id) {
-      const tables = document.querySelectorAll('.data-table');
-      tables.forEach(table => table.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }
-  </script>
 </head>
 <body>
+  <h1>업적 보기</h1>
+  <div class="button-group">
+    <button onclick="showTable('코인')" id="btn-코인">코인</button>
+    <button onclick="showTable('게임')" id="btn-게임">게임</button>
+    <button onclick="showTable('오버파워')" id="btn-오버파워">오버파워</button>
+  </div>
+  <div id="achievement-table"></div>
 
-<h1>업적 시스템</h1>
+  <script>
+    const SHEET_URL = "https://script.google.com/macros/s/AKfycbxaPgjlH6e1HIiSY9Pe8RU6rI-fA5IQeVkIbTzPD144Zf1Rc8j8TKamewGyanPHd0g/exec";
+    let allData = [];
 
-<table>
-  <tr>
-    <td style="width: 20%;">업적선택</td>
-    <td colspan="4">
-      <div class="button-group">
-        <button onclick="showTable('table1')">1. 코인</button>
-        <button onclick="showTable('table2')">2. 게임</button>
-        <button onclick="showTable('table3')">3. 오버파워</button>
-      </div>
-    </td>
-  </tr>
-</table>
+    fetch(SHEET_URL)
+      .then(res => res.json())
+      .then(data => {
+        allData = data.slice(1); // 첫 행은 헤더니까 제외
+        showTable("코인"); // 기본값
+      });
 
-<!-- 1번표: 코인 -->
-<table id="table1" class="data-table">
-  <tr>
-    <td>등급</td>
-    <td>업적이름</td>
-    <td>달성조건</td>
-    <td>보상</td>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td>겜안분 탈출</td>
-    <td>츄니즘 총 사용코인이 1000코인을 돌파한다</td>
-    <td>10</td>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td>츄2병</td>
-    <td>츄니즘 총 사용코인이 2000코인을 돌파한다</td>
-    <td>20</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>3수생</td>
-    <td>츄니즘 총 사용코인이 3000코인을 돌파한다</td>
-    <td>30</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>겜한분</td>
-    <td>츄니즘 총 사용코인이 4000코인을 돌파한다</td>
-    <td>40</td>
-  </tr>
-</table>
+    function showTable(category) {
+      // 버튼 상태 업데이트
+      document.querySelectorAll('.button-group button').forEach(btn => {
+        btn.classList.remove("active");
+      });
+      document.getElementById("btn-" + category).classList.add("active");
 
-<!-- 2번표: 게임 -->
-<table id="table2" class="data-table hidden">
-  <tr>
-    <td>등급</td>
-    <td>업적이름</td>
-    <td>달성조건</td>
-    <td>보상</td>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td>1</td>
-    <td>1</td>
-    <td>1</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>2</td>
-    <td>2</td>
-    <td>2</td>
-  </tr>
-  <tr>
-    <td>3</td>
-    <td>3</td>
-    <td>3</td>
-    <td>3</td>
-  </tr>
-  <tr>
-    <td>4</td>
-    <td>4</td>
-    <td>4</td>
-    <td>4</td>
-  </tr>
-</table>
+      // 해당 카테고리 필터링
+      const filtered = allData.filter(row => row[0] === category);
+      
+      // 표 HTML 생성
+      let html = `
+        <table>
+          <tr>
+            <th>등급</th>
+            <th>업적이름</th>
+            <th>달성조건</th>
+            <th>보상(exp)</th>
+            <th>보상(np)</th>
+          </tr>
+      `;
 
-<!-- 3번표: 오버파워 -->
-<table id="table3" class="data-table hidden">
-  <tr>
-    <td>등급</td>
-    <td>업적이름</td>
-    <td>달성조건</td>
-    <td>보상</td>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td>은포제1</td>
-    <td>은포제를 달성한다</td>
-    <td>10</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>은포제2</td>
-    <td>오버파워 96%를 달성한다</td>
-    <td>20</td>
-  </tr>
-  <tr>
-    <td>3</td>
-    <td>은포제3</td>
-    <td>오퍼바워 97%를 달성한다</td>
-    <td>30</td>
-  </tr>
-  <tr>
-    <td>4</td>
-    <td>금포제</td>
-    <td>금포제를 달성한다</td>
-    <td>50</td>
-  </tr>
-</table>
+      filtered.forEach(row => {
+        html += `
+          <tr>
+            <td>${row[1]}</td>
+            <td>${row[2]}</td>
+            <td>${row[3]}</td>
+            <td>${row[4]}</td>
+            <td>${row[5]}</td>
+          </tr>
+        `;
+      });
 
+      html += `</table>`;
+      document.getElementById("achievement-table").innerHTML = html;
+    }
+  </script>
 </body>
 </html>
