@@ -3,106 +3,173 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>구글 시트 업적 표</title>
+  <title>업적 테이블</title>
   <style>
     body {
-      font-family: sans-serif;
-      background-color: #f0f8ff;
+      font-family: 'Noto Sans KR', sans-serif;
       padding: 20px;
+      background: #f0f8ff;
     }
-    h2 {
-      color: #3478f6;
+
+    .category-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
+
+    .category-buttons button {
+      padding: 8px 16px;
+      border: none;
+      background-color: #87ceeb;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .category-buttons button:hover {
+      background-color: #00bfff;
+    }
+
     table {
-      border-collapse: collapse;
       width: 100%;
-      max-width: 800px;
-      margin-top: 20px;
-      background-color: #e8f4ff;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     th, td {
-      border: 1px solid #a3c9f1;
+      border: 1px solid #add8e6;
       padding: 10px;
       text-align: center;
     }
+
     th {
-      background-color: #7eb6f9;
-      color: #fff;
+      background-color: #b0e0e6;
+      color: #333;
     }
-    @media screen and (max-width: 600px) {
+
+    @media (max-width: 600px) {
       table, thead, tbody, th, td, tr {
         display: block;
       }
-      tr {
-        margin-bottom: 15px;
+
+      th {
+        display: none;
       }
+
       td {
-        text-align: right;
-        padding-left: 50%;
+        border: none;
+        border-bottom: 1px solid #eee;
         position: relative;
+        padding-left: 50%;
       }
+
       td::before {
         content: attr(data-label);
         position: absolute;
         left: 10px;
-        width: 45%;
-        padding-left: 10px;
+        top: 10px;
         font-weight: bold;
-        text-align: left;
-      }
-      th {
-        display: none;
+        color: #333;
       }
     }
   </style>
 </head>
 <body>
 
-  <h2>업적 표 (Google Sheet에서 불러오기)</h2>
-  <table id="data-table"></table>
+  <h2>업적 선택</h2>
+  <div class="category-buttons">
+    <button onclick="filterCategory('코인')">코인</button>
+    <button onclick="filterCategory('게임')">게임</button>
+    <button onclick="filterCategory('오버파워')">오버파워</button>
+  </div>
+
+  <table id="achievementTable">
+    <thead>
+      <tr>
+        <th>등급</th>
+        <th>업적이름</th>
+        <th>달성조건</th>
+        <th>보상(exp)</th>
+        <th>보상(np)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?gid=1392866630&single=true&output=csv';
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?output=csv";
+    let allRows = [];
 
-    function csvToArray(str, delimiter = ',') {
-      return str.trim().split('\n').map(row => {
-        const pattern = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-        return [...row.matchAll(pattern)].map(m => m[0].replace(/^"|"$/g, ''));
+    // CSV 파싱 함수 (쉼표/따옴표 처리 포함)
+    function parseCSV(csv) {
+      const rows = [];
+      const lines = csv.trim().split('\n');
+
+      for (const line of lines) {
+        const cells = [];
+        let current = '';
+        let insideQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"' && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else if (char === '"') {
+            insideQuotes = !insideQuotes;
+          } else if (char === ',' && !insideQuotes) {
+            cells.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        cells.push(current.trim());
+        rows.push(cells);
+      }
+
+      return rows;
+    }
+
+    function renderTable(category) {
+      const tbody = document.querySelector("#achievementTable tbody");
+      tbody.innerHTML = "";
+      allRows.forEach(row => {
+        if (row[0] === category) {
+          const tr = document.createElement("tr");
+          for (let i = 1; i < row.length; i++) {
+            const td = document.createElement("td");
+            const headers = ["등급", "업적이름", "달성조건", "보상(exp)", "보상(np)"];
+            td.setAttribute("data-label", headers[i - 1]);
+            td.textContent = row[i];
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        }
       });
     }
 
-    fetch(csvUrl)
+    function filterCategory(category) {
+      renderTable(category);
+    }
+
+    fetch(SHEET_URL)
       .then(res => res.text())
       .then(csvText => {
-        const data = csvToArray(csvText);
-        const table = document.getElementById('data-table');
-
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        data[0].forEach(text => {
-          const th = document.createElement('th');
-          th.textContent = text;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        data.slice(1).forEach(row => {
-          const tr = document.createElement('tr');
-          row.forEach((text, idx) => {
-            const td = document.createElement('td');
-            td.setAttribute('data-label', data[0][idx]);
-            td.textContent = text;
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
+        const data = parseCSV(csvText);
+        allRows = data.slice(1); // 첫 줄은 헤더이므로 제외
+        renderTable("코인"); // 초기 보기
       })
-      .catch(err => {
-        console.error('CSV 로딩 오류:', err);
-        document.getElementById('data-table').textContent = '데이터를 불러오는 데 실패했습니다.';
+      .catch(error => {
+        console.error("CSV 불러오기 실패:", error);
+        document.querySelector("#achievementTable tbody").innerHTML =
+          "<tr><td colspan='5'>데이터를 불러오는 데 실패했습니다.</td></tr>";
       });
   </script>
 
