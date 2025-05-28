@@ -83,10 +83,8 @@
 <body>
 
   <h2>업적 선택</h2>
-  <div class="category-buttons">
-    <button onclick="filterCategory('코인')">코인</button>
-    <button onclick="filterCategory('게임')">게임</button>
-    <button onclick="filterCategory('오버파워')">오버파워</button>
+  <div class="category-buttons" id="category-buttons">
+    <!-- 버튼은 JS에서 동적으로 생성 -->
   </div>
 
   <table id="achievementTable">
@@ -105,8 +103,9 @@
   <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?gid=1392866630&single=true&output=csv";
     let allRows = [];
+    let categories = new Set();
 
-    // CSV 파싱 함수 (쉼표/따옴표 처리 포함)
+    // CSV 파싱
     function parseCSV(csv) {
       const rows = [];
       const lines = csv.trim().split('\n');
@@ -140,6 +139,7 @@
     function renderTable(category) {
       const tbody = document.querySelector("#achievementTable tbody");
       tbody.innerHTML = "";
+
       allRows.forEach(row => {
         if (row[0] === category) {
           const tr = document.createElement("tr");
@@ -155,19 +155,29 @@
       });
     }
 
-    function filterCategory(category) {
-      renderTable(category);
+    function createCategoryButtons() {
+      const container = document.getElementById("category-buttons");
+      categories.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.textContent = cat;
+        btn.onclick = () => renderTable(cat);
+        container.appendChild(btn);
+      });
     }
 
     fetch(SHEET_URL)
       .then(res => res.text())
       .then(csvText => {
         const data = parseCSV(csvText);
-        allRows = data.slice(1); // 첫 줄은 헤더이므로 제외
-        renderTable("코인"); // 초기 보기
+        allRows = data.slice(1); // 첫 줄은 헤더 제거
+        allRows.forEach(row => {
+          if (row[0]) categories.add(row[0]);
+        });
+        createCategoryButtons();
+        renderTable([...categories][0]); // 첫 카테고리 기본 표시
       })
-      .catch(error => {
-        console.error("CSV 불러오기 실패:", error);
+      .catch(err => {
+        console.error("CSV 불러오기 오류:", err);
         document.querySelector("#achievementTable tbody").innerHTML =
           "<tr><td colspan='5'>데이터를 불러오는 데 실패했습니다.</td></tr>";
       });
