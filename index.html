@@ -63,11 +63,11 @@
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?output=csv";
     let allData = [];
 
-    fetch(SHEET_URL)
-      .then(res => res.json())
-      .then(data => {
-        allData = data.slice(1); // 첫 행은 헤더니까 제외
-        showTable("코인"); // 기본값
+    fetch(csvUrl)
+    .then(res => res.text())
+    .then(csvText => {
+      const data = csvToArray(csvText);
+      const table = document.getElementById('data-table');
       });
 
     function showTable(category) {
