@@ -1,112 +1,110 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>업적 보기</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>구글 시트 업적 표</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background: #e0f7fa;
-      margin: 0;
+      font-family: sans-serif;
+      background-color: #f0f8ff;
       padding: 20px;
     }
-    h1 {
-      color: #00796b;
+    h2 {
+      color: #3478f6;
     }
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      background-color: #ffffff;
+      width: 100%;
+      max-width: 800px;
+      margin-top: 20px;
+      background-color: #e8f4ff;
     }
     th, td {
-      border: 1px solid #b2ebf2;
+      border: 1px solid #a3c9f1;
       padding: 10px;
       text-align: center;
     }
     th {
-      background-color: #b2ebf2;
-    }
-    .button-group {
-      margin: 10px 0;
-    }
-    .button-group button {
-      background-color: #4dd0e1;
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      margin-right: 5px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .button-group button.active {
-      background-color: #00796b;
+      background-color: #7eb6f9;
+      color: #fff;
     }
     @media screen and (max-width: 600px) {
       table, thead, tbody, th, td, tr {
-        font-size: 12px;
+        display: block;
+      }
+      tr {
+        margin-bottom: 15px;
+      }
+      td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+      }
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+      }
+      th {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
-  <h1>업적 보기</h1>
-  <div class="button-group">
-    <button onclick="showTable('코인')" id="btn-코인">코인</button>
-    <button onclick="showTable('게임')" id="btn-게임">게임</button>
-    <button onclick="showTable('오버파워')" id="btn-오버파워">오버파워</button>
-  </div>
-  <div id="achievement-table"></div>
+
+  <h2>업적 표 (Google Sheet에서 불러오기)</h2>
+  <table id="data-table"></table>
 
   <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?output=csv";
-    let allData = [];
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?gid=1392866630&single=true&output=csv';
+
+    function csvToArray(str, delimiter = ',') {
+      return str.trim().split('\n').map(row => {
+        const pattern = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+        return [...row.matchAll(pattern)].map(m => m[0].replace(/^"|"$/g, ''));
+      });
+    }
 
     fetch(csvUrl)
-    .then(res => res.text())
-    .then(csvText => {
-      const data = csvToArray(csvText);
-      const table = document.getElementById('data-table');
+      .then(res => res.text())
+      .then(csvText => {
+        const data = csvToArray(csvText);
+        const table = document.getElementById('data-table');
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        data[0].forEach(text => {
+          const th = document.createElement('th');
+          th.textContent = text;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.slice(1).forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach((text, idx) => {
+            const td = document.createElement('td');
+            td.setAttribute('data-label', data[0][idx]);
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+      })
+      .catch(err => {
+        console.error('CSV 로딩 오류:', err);
+        document.getElementById('data-table').textContent = '데이터를 불러오는 데 실패했습니다.';
       });
-
-    function showTable(category) {
-      // 버튼 상태 업데이트
-      document.querySelectorAll('.button-group button').forEach(btn => {
-        btn.classList.remove("active");
-      });
-      document.getElementById("btn-" + category).classList.add("active");
-
-      // 해당 카테고리 필터링
-      const filtered = allData.filter(row => row[0] === category);
-      
-      // 표 HTML 생성
-      let html = `
-        <table>
-          <tr>
-            <th>등급</th>
-            <th>업적이름</th>
-            <th>달성조건</th>
-            <th>보상(EXP)</th>
-            <th>보상(NP)</th>
-          </tr>
-      `;
-
-      filtered.forEach(row => {
-        html += `
-          <tr>
-            <td>${row[1]}</td>
-            <td>${row[2]}</td>
-            <td>${row[3]}</td>
-            <td>${row[4]}</td>
-            <td>${row[5]}</td>
-          </tr>
-        `;
-      });
-
-      html += `</table>`;
-      document.getElementById("achievement-table").innerHTML = html;
-    }
   </script>
+
 </body>
 </html>
