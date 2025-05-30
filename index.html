@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>업적 테이블</title>
   <style>
     body {
@@ -11,24 +11,10 @@
       background: #f0f8ff;
     }
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-      align-items: center;
-    }
-
-    .controls input {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      flex-grow: 1;
-    }
-
     .category-buttons {
       display: flex;
       gap: 10px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
 
@@ -47,6 +33,14 @@
       background-color: #00bfff;
     }
 
+    #searchInput {
+      padding: 6px;
+      margin-bottom: 20px;
+      width: 200px;
+      border: 1px solid #add8e6;
+      border-radius: 5px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -60,31 +54,41 @@
       border: 1px solid #add8e6;
       padding: 10px;
       text-align: center;
+      cursor: pointer;
     }
 
     th {
       background-color: #b0e0e6;
       color: #333;
-      cursor: pointer;
+    }
+
+    th.sort-asc::after {
+      content: " \25B2";
+    }
+
+    th.sort-desc::after {
+      content: " \25BC";
     }
 
     .pagination {
       margin-top: 20px;
-      text-align: center;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .pagination button {
-      margin: 0 5px;
-      padding: 5px 10px;
+      padding: 6px 12px;
       border: none;
       background-color: #87ceeb;
       color: white;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
     .pagination button.active {
       background-color: #00bfff;
+      font-weight: bold;
     }
 
     @media (max-width: 600px) {
@@ -93,23 +97,21 @@
       }
 
       th {
-        display: none;
+        position: sticky;
+        top: 0;
       }
 
       td {
         border: none;
         border-bottom: 1px solid #eee;
-        position: relative;
-        padding-left: 50%;
       }
 
       td::before {
         content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        top: 10px;
+        display: block;
         font-weight: bold;
         color: #333;
+        margin-bottom: 5px;
       }
     }
   </style>
@@ -117,14 +119,23 @@
 <body>
 
   <h2>업적 선택</h2>
-  <div class="controls">
-    <input type="text" id="searchInput" placeholder="검색어 입력..." oninput="applyFilters()">
-    <div class="category-buttons" id="category-buttons"></div>
+  <div class="category-buttons">
+    <button onclick="filterCategory('코인')">코인</button>
+    <button onclick="filterCategory('게임')">게임</button>
+    <button onclick="filterCategory('오버파워')">오버파워</button>
   </div>
+
+  <input type="text" id="searchInput" placeholder="검색...">
 
   <table id="achievementTable">
     <thead>
-      <tr id="tableHeader"></tr>
+      <tr>
+        <th onclick="sortTable(0)">등급</th>
+        <th onclick="sortTable(1)">업적이름</th>
+        <th onclick="sortTable(2)">달성조건</th>
+        <th onclick="sortTable(3)">보상(exp)</th>
+        <th onclick="sortTable(4)">보상(np)</th>
+      </tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -134,113 +145,94 @@
   <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?gid=1392866630&single=true&output=csv";
     let allRows = [];
-    let filteredRows = [];
-    let categories = new Set();
-    let currentCategory = "";
+    let currentCategory = "코인";
     let currentPage = 1;
     const rowsPerPage = 10;
-    let currentSort = { index: null, asc: true };
+    let sortColumn = null;
+    let sortAscending = true;
 
-    const headers = ["등급", "업적이름", "달성조건", "보상(exp)", "보상(np)"];
+    document.getElementById("searchInput").addEventListener("input", () => renderTable(currentCategory));
 
-    function parseCSV(csv) {
-      return csv.trim().split("\n").map(line => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '')));
-    }
-
-    function applyFilters() {
-      const keyword = document.getElementById("searchInput").value.toLowerCase();
-      filteredRows = allRows.filter(row => {
-        const inCategory = currentCategory ? row[0] === currentCategory : true;
-        const matchesKeyword = row.slice(1).some(cell => cell.toLowerCase().includes(keyword));
-        return inCategory && matchesKeyword;
-      });
-      currentPage = 1;
-      renderTable();
-      renderPagination();
-    }
-
-    function sortTable(index) {
-      if (currentSort.index === index) currentSort.asc = !currentSort.asc;
-      else currentSort = { index, asc: true };
-
-      filteredRows.sort((a, b) => {
-        const valA = a[index + 1].toLowerCase();
-        const valB = b[index + 1].toLowerCase();
-        return currentSort.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      });
-      renderTable();
-    }
-
-    function renderTable() {
+    function renderTable(category) {
+      currentCategory = category;
       const tbody = document.querySelector("#achievementTable tbody");
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+
+      let filteredRows = allRows.filter(row => row[0] === category && row.slice(1).some(cell => cell.toLowerCase().includes(searchTerm)));
+
+      if (sortColumn !== null) {
+        filteredRows.sort((a, b) => {
+          const valA = a[sortColumn + 1];
+          const valB = b[sortColumn + 1];
+          if (!isNaN(valA) && !isNaN(valB)) {
+            return sortAscending ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
+          }
+          return sortAscending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+      }
+
+      const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+      currentPage = Math.min(currentPage, totalPages) || 1;
+
+      const pageRows = filteredRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
       tbody.innerHTML = "";
-      const start = (currentPage - 1) * rowsPerPage;
-      const pageRows = filteredRows.slice(start, start + rowsPerPage);
       pageRows.forEach(row => {
         const tr = document.createElement("tr");
         for (let i = 1; i < row.length; i++) {
           const td = document.createElement("td");
-          td.setAttribute("data-label", headers[i - 1]);
+          td.setAttribute("data-label", ["등급", "업적이름", "달성조건", "보상(exp)", "보상(np)"][i - 1]);
           td.textContent = row[i];
           tr.appendChild(td);
         }
         tbody.appendChild(tr);
       });
+
+      renderPagination(totalPages);
     }
 
-    function renderPagination() {
-      const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-      const container = document.getElementById("pagination");
-      container.innerHTML = "";
+    function filterCategory(category) {
+      currentPage = 1;
+      renderTable(category);
+    }
+
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
       for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement("button");
         btn.textContent = i;
-        btn.className = i === currentPage ? "active" : "";
+        btn.classList.toggle("active", i === currentPage);
         btn.onclick = () => {
           currentPage = i;
-          renderTable();
-          renderPagination();
+          renderTable(currentCategory);
         };
-        container.appendChild(btn);
+        pagination.appendChild(btn);
       }
     }
 
-    function createCategoryButtons() {
-      const container = document.getElementById("category-buttons");
-      container.innerHTML = "";
-      categories.forEach(cat => {
-        const btn = document.createElement("button");
-        btn.textContent = cat;
-        btn.onclick = () => {
-          currentCategory = cat;
-          applyFilters();
-        };
-        container.appendChild(btn);
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortAscending = !sortAscending;
+      } else {
+        sortColumn = column;
+        sortAscending = true;
+      }
+      document.querySelectorAll("th").forEach((th, idx) => {
+        th.classList.remove("sort-asc", "sort-desc");
+        if (idx === column) th.classList.add(sortAscending ? "sort-asc" : "sort-desc");
       });
+      renderTable(currentCategory);
     }
 
     fetch(SHEET_URL)
       .then(res => res.text())
-      .then(csvText => {
-        const data = parseCSV(csvText);
-        allRows = data.slice(1);
-        allRows.forEach(row => { if (row[0]) categories.add(row[0]); });
-        const headerRow = document.getElementById("tableHeader");
-        headers.forEach((header, i) => {
-          const th = document.createElement("th");
-          th.textContent = header;
-          th.onclick = () => sortTable(i);
-          headerRow.appendChild(th);
-        });
-        createCategoryButtons();
-        currentCategory = [...categories][0];
-        applyFilters();
-      })
-      .catch(err => {
-        console.error("CSV 불러오기 오류:", err);
-        document.querySelector("#achievementTable tbody").innerHTML =
-          "<tr><td colspan='5'>데이터를 불러오는 데 실패했습니다.</td></tr>";
+      .then(data => {
+        const lines = data.trim().split("\n").map(line => line.split(","));
+        allRows = lines.slice(1); // remove header
+        renderTable(currentCategory);
       });
   </script>
+
 </body>
 </html>
