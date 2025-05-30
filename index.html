@@ -36,13 +36,18 @@
     #searchInput {
       padding: 6px;
       margin-bottom: 20px;
-      width: 200px;
+      width: 140px;
       border: 1px solid #add8e6;
       border-radius: 5px;
     }
 
+    .table-container {
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
+      min-width: 600px;
       border-collapse: collapse;
       background-color: white;
       border-radius: 12px;
@@ -90,30 +95,6 @@
       background-color: #00bfff;
       font-weight: bold;
     }
-
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-
-      th {
-        position: sticky;
-        top: 0;
-      }
-
-      td {
-        border: none;
-        border-bottom: 1px solid #eee;
-      }
-
-      td::before {
-        content: attr(data-label);
-        display: block;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 5px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -127,18 +108,20 @@
 
   <input type="text" id="searchInput" placeholder="검색...">
 
-  <table id="achievementTable">
-    <thead>
-      <tr>
-        <th onclick="sortTable(0)">등급</th>
-        <th onclick="sortTable(1)">업적이름</th>
-        <th onclick="sortTable(2)">달성조건</th>
-        <th onclick="sortTable(3)">보상(exp)</th>
-        <th onclick="sortTable(4)">보상(np)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-container">
+    <table id="achievementTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">등급</th>
+          <th onclick="sortTable(1)">업적이름</th>
+          <th onclick="sortTable(2)">달성조건</th>
+          <th onclick="sortTable(3)">보상(exp)</th>
+          <th onclick="sortTable(4)">보상(np)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <div class="pagination" id="pagination"></div>
 
@@ -181,7 +164,6 @@
         const tr = document.createElement("tr");
         for (let i = 1; i < row.length; i++) {
           const td = document.createElement("td");
-          td.setAttribute("data-label", ["등급", "업적이름", "달성조건", "보상(exp)", "보상(np)"][i - 1]);
           td.textContent = row[i];
           tr.appendChild(td);
         }
