@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>업적 테이블</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      padding: 20px;
+      background: #f0f8ff;
+    }
+
+    .category-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .category-buttons button {
+      padding: 8px 16px;
+      border: none;
+      background-color: #87ceeb;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .category-buttons button:hover {
+      background-color: #00bfff;
+    }
+
+    #searchInput {
+      padding: 6px;
+      margin-bottom: 20px;
+      width: 140px;
+      border: 1px solid #add8e6;
+      border-radius: 5px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #add8e6;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    th {
+      background-color: #b0e0e6;
+      color: #333;
+    }
+
+    th.sort-asc::after {
+      content: " \25B2";
+    }
+
+    th.sort-desc::after {
+      content: " \25BC";
+    }
+
+    .pagination {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pagination button {
+      padding: 6px 12px;
+      border: none;
+      background-color: #87ceeb;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background-color: #00bfff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>업적 선택</h2>
+  <div class="category-buttons">
+    <button onclick="filterCategory('코인')">코인</button>
+    <button onclick="filterCategory('게임')">게임</button>
+    <button onclick="filterCategory('오버파워')">오버파워</button>
+  </div>
+
+  <input type="text" id="searchInput" placeholder="검색...">
+
+  <div class="table-container">
+    <table id="achievementTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">등급</th>
+          <th onclick="sortTable(1)">업적이름</th>
+          <th onclick="sortTable(2)">달성조건</th>
+          <th onclick="sortTable(3)">보상(exp)</th>
+          <th onclick="sortTable(4)">보상(np)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+
+  <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLan4Chck-rfWCfH5sJaswK-us7BukfA_whWh8-6eS4oZTnoeVFMagqsdsmeLX18sMlnubqE5bDIgF/pub?gid=1392866630&single=true&output=csv";
+    let allRows = [];
+    let currentCategory = "코인";
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let sortColumn = null;
+    let sortAscending = true;
+
+    document.getElementById("searchInput").addEventListener("input", () => renderTable(currentCategory));
+
+    function renderTable(category) {
+      currentCategory = category;
+      const tbody = document.querySelector("#achievementTable tbody");
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+
+      let filteredRows = allRows.filter(row => row[0] === category && row.slice(1).some(cell => cell.toLowerCase().includes(searchTerm)));
+
+      if (sortColumn !== null) {
+        filteredRows.sort((a, b) => {
+          const valA = a[sortColumn + 1];
+          const valB = b[sortColumn + 1];
+          if (!isNaN(valA) && !isNaN(valB)) {
+            return sortAscending ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
+          }
+          return sortAscending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+      }
+
+      const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+      currentPage = Math.min(currentPage, totalPages) || 1;
+
+      const pageRows = filteredRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
+      tbody.innerHTML = "";
+      pageRows.forEach(row => {
+        const tr = document.createElement("tr");
+        for (let i = 1; i < row.length; i++) {
+          const td = document.createElement("td");
+          td.textContent = row[i];
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      });
+
+      renderPagination(totalPages);
+    }
+
+    function filterCategory(category) {
+      currentPage = 1;
+      renderTable(category);
+    }
+
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.classList.toggle("active", i === currentPage);
+        btn.onclick = () => {
+          currentPage = i;
+          renderTable(currentCategory);
+        };
+        pagination.appendChild(btn);
+      }
+    }
+
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortAscending = !sortAscending;
+      } else {
+        sortColumn = column;
+        sortAscending = true;
+      }
+      document.querySelectorAll("th").forEach((th, idx) => {
+        th.classList.remove("sort-asc", "sort-desc");
+        if (idx === column) th.classList.add(sortAscending ? "sort-asc" : "sort-desc");
+      });
+      renderTable(currentCategory);
+    }
+
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(data => {
+        const lines = data.trim().split("\n").map(line => line.split(","));
+        allRows = lines.slice(1); // remove header
+        renderTable(currentCategory);
+      });
+  </script>
+
+</body>
+</html>
