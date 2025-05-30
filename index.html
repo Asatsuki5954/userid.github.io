@@ -3,48 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nong Nong Dan</title>
+  <title>홈 화면</title>
   <style>
     body {
-      font-family: 'Noto Sans KR', sans-serif;
       margin: 0;
-      padding: 0;
-      background: linear-gradient(to bottom, #e0f7ff, #b2e0f5);
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f0f8ff;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      text-align: center;
     }
 
     h1 {
-      color: #0077b6;
-      font-size: 2.5em;
-      margin-bottom: 30px;
+      color: #007acc;
+      margin-bottom: 40px;
     }
 
-    .main-button {
-      padding: 14px 28px;
-      font-size: 1.2em;
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .button-container button {
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #87ceeb;
       color: white;
-      background-color: #00bfff;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
-      transition: background-color 0.3s ease, transform 0.2s ease;
+      transition: background-color 0.3s ease;
     }
 
-    .main-button:hover {
-      background-color: #009acd;
-      transform: translateY(-2px);
+    .button-container button:hover {
+      background-color: #00bfff;
+    }
+
+    @media (max-width: 500px) {
+      .button-container {
+        width: 90%;
+      }
+
+      .button-container button {
+        font-size: 16px;
+        padding: 12px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>농농단 사이트</h1>
-  <button class="main-button" onclick="location.href='achive.html'">업적</button>
+  <h1>농농단</h1>
+
+  <div class="button-container">
+    <button onclick="location.href='achive.html'">업적</button>
+    <button onclick="alert('업데이트 예정입니다')">프로필</button>
+  </div>
 
 </body>
 </html>
