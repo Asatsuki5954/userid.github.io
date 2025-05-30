@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>프로필</title>
+  <style>
+    body {
+      background: #e0f7ff;
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    button {
+      background: #87ceeb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      width: 100px;
+    }
+    button:hover {
+      background: #00bfff;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="userDisplay">로그인한 사용자: </h2>
+  <button onclick="alert('업데이트 예정입니다')">1번</button>
+  <button onclick="alert('업데이트 예정입니다')">2번</button>
+  <button onclick="alert('업데이트 예정입니다')">3번</button>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      document.getElementById('userDisplay').textContent += userId;
+    } else {
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
