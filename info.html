@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사용자 정보</title>
+  <style>
+    body {
+      background: #e0f7ff;
+      font-family: 'Noto Sans KR', sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      max-width: 600px;
+      border-collapse: collapse;
+      background: white;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #87ceeb;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #87ceeb;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="userInfo">로그인한 사용자: </h2>
+  <table>
+    <tr><th>직위</th><td id="colRank"></td></tr>
+    <tr><th>농농단 레벨</th><td id="colLevel"></td></tr>
+    <tr><th>경험치</th><td id="colExp"></td></tr>
+    <tr><th>츄니즘 레벨</th><td id="colChuniz"></td></tr>
+    <tr><th>레이팅</th><td id="colRating"></td></tr>
+    <tr><th>오버파워</th><td id="colOverpower"></td></tr>
+    <tr><th>팀포</th><td id="colTeamPo"></td></tr>
+    <tr><th>보유 NP</th><td id="colNP"></td></tr>
+  </table>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (!userId) window.location.href = 'login.html';
+    document.getElementById('userInfo').textContent += userId;
+
+    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
+
+    fetch(SHEET_CSV)
+      .then(res => res.text())
+      .then(csv => {
+        const lines = csv.trim().split('\n');
+        const data = lines.slice(1).map(l => l.split(','));
+        const row = data.find(r => r[0] === userId);
+        if (row) {
+          document.getElementById('colRank').textContent = row[2];
+          document.getElementById('colLevel').textContent = row[1];
+          document.getElementById('colExp').textContent = row[3];
+          document.getElementById('colChuniz').textContent = row[4];
+          document.getElementById('colRating').textContent = row[5];
+          document.getElementById('colOverpower').textContent = row[6];
+          document.getElementById('colTeamPo').textContent = row[7];
+          document.getElementById('colNP').textContent = row[8];
+        }
+      });
+  </script>
+</body>
+</html>
