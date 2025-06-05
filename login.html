@@ -51,15 +51,27 @@
   </div>
 
   <script>
+    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
+
     function login() {
-      const id = document.getElementById('userId').value.trim();
-      const validIds = ['reina', 'topieory','asatsuki5954', 'cwg','G.race','podochung55','kth7747','Icekogkog','Takagisensei','choa14111','GONE','jalja','Hooni1212','Akane','doko23'];
-      if (validIds.includes(id)) {
-        localStorage.setItem('userId', id);
-        window.location.href = 'profile.html';
-      } else {
-        alert('아이디가 틀립니다. 까먹었을 시 팀장에게 갠톡을 주세요.');
-      }
+      const inputId = document.getElementById('userId').value.trim();
+
+      fetch(SHEET_CSV)
+        .then(res => res.text())
+        .then(csv => {
+          const lines = csv.trim().split('\n');
+          const data = lines.slice(1).map(line => line.split(','));
+          const userRow = data.find(row => row[0] === inputId);
+
+          if (userRow) {
+            const nickname = userRow[1];
+            localStorage.setItem('userId', inputId);
+            localStorage.setItem('nickname', nickname);
+            window.location.href = 'profile.html';
+          } else {
+            alert('아이디가 틀립니다. 까먹었을 시 팀장에게 갠톡을 주세요.');
+          }
+        });
     }
   </script>
 </body>
