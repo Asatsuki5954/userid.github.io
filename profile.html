@@ -32,7 +32,7 @@
   </style>
 </head>
 <body>
-  <h2 id="userDisplay">로그인한 사용자: </h2>
+  <h2 id="userDisplay">닉네임: </h2>
   <button onclick="location.href='info.html'">정보</button>
   <button onclick="location.href='teampoint.html'">팀포</button>
   <button onclick="alert('업데이트 예정입니다')">내전</button>
@@ -41,10 +41,24 @@
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (userId) {
-      document.getElementById('userDisplay').textContent += userId;
-    } else {
+    if (!userId) {
       window.location.href = 'login.html';
+    } else {
+      const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
+      
+      fetch(SHEET_CSV)
+        .then(res => res.text())
+        .then(csv => {
+          const lines = csv.trim().split('\n');
+          const data = lines.slice(1).map(line => line.split(','));
+          const row = data.find(r => r[0] === userId);
+          if (row) {
+            const nickname = row[1];
+            document.getElementById('userDisplay').textContent = `닉네임: ${nickname}`;
+          } else {
+            document.getElementById('userDisplay').textContent = `아이디: ${userId} (닉네임 없음)`;
+          }
+        });
     }
   </script>
 </body>
