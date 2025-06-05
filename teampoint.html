@@ -85,8 +85,9 @@
     fetch(sheetUrl)
       .then(response => response.text())
       .then(csvText => {
-        const rows = csvText.trim().split('\n').map(row => row.map(cell => cell.trim()));
-        const dataRows = rows.slice(1);
+        // ✅ 여기 수정
+        const rows = csvText.trim().split('\n').map(row => row.split(',').map(cell => cell.trim()));
+        const dataRows = rows.slice(1); // 첫 줄은 헤더
 
         // 사용자 점수 표시
         const userRow = dataRows.find(row => row[0] === userId);
