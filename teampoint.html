@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>팀 포인트</title>
+  <style>
+    body {
+      background: #e0f7ff;
+      font-family: 'Noto Sans KR', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h2 {
+      margin-bottom: 30px;
+      color: #007acc;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 80%;
+      max-width: 500px;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 14px;
+      border: 1px solid #aaa;
+    }
+
+    th {
+      background: #d0f0ff;
+    }
+
+    td.bold {
+      font-weight: bold;
+      color: #333;
+    }
+
+    tr.divider-row td {
+      border-top: 3px double #007acc;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 id="userDisplay">로그인한 사용자: </h2>
+  <table id="pointTable">
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td class="bold">총합</td><td id="total" class="bold">-</td></tr>
+    <tr class="divider-row"><td>3월</td><td id="march">-</td></tr>
+    <tr><td>4월</td><td id="april">-</td></tr>
+    <tr><td>5월</td><td id="may">-</td></tr>
+    <tr><td>6월</td><td id="june">-</td></tr>
+    <tr><td>7월</td><td id="july">-</td></tr>
+    <tr class="divider-row"><td class="bold">총합</td><td id="total2" class="bold">-</td></tr>
+  </table>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('userDisplay').textContent += userId;
+
+    // Google 시트의 CSV 링크 가져오기 (단, 공개설정 필요!)
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFSrbn2x2kSN4mwfZVd15I79vA4KCiZZ4KmupZVejjQXlasv22eUrZAlYwUTO3xO1E-TRozZ0uPb3i/pub?output=csv';
+
+    fetch(sheetUrl)
+      .then(response => response.text())
+      .then(csvText => {
+        const rows = csvText.trim().split('\n').map(row => row.split(','));
+        const header = rows[0];
+        const dataRows = rows.slice(1);
+
+        const userRow = dataRows.find(row => row[0] === userId);
+        if (!userRow) {
+          alert("사용자 정보를 찾을 수 없습니다.");
+          return;
+        }
+
+        document.getElementById('total').textContent = userRow[1] || '-';
+        document.getElementById('march').textContent = userRow[2] || '-';
+        document.getElementById('april').textContent = userRow[3] || '-';
+        document.getElementById('may').textContent = userRow[4] || '-';
+        document.getElementById('june').textContent = userRow[5] || '-';
+        document.getElementById('july').textContent = userRow[6] || '-';
+        document.getElementById('total2').textContent = userRow[1] || '-';
+      })
+      .catch(error => {
+        console.error("CSV 불러오기 실패:", error);
+        alert("데이터를 불러오지 못했습니다.");
+      });
+  </script>
+
+</body>
+</html>
