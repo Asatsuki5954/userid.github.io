@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>사용자 정보</title>
   <style>
     body {
@@ -48,19 +47,18 @@
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) window.location.href = 'login.html';
+    const nickname = localStorage.getItem('nickname');
+    if (!userId || !nickname) window.location.href = 'login.html';
+    document.getElementById('userInfo').textContent += nickname;
 
-    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
+    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?output=csv';
 
     fetch(SHEET_CSV)
       .then(res => res.text())
       .then(csv => {
-        const lines = csv.trim().split('\n');
-        const data = lines.slice(1).map(l => l.split(','));
-        const row = data.find(r => r[0] === userId);
+        const rows = csv.trim().split('\n').map(r => r.split(','));
+        const row = rows.find(r => r[0] === userId);
         if (row) {
-          const nickname = row[1];
-          document.getElementById('userInfo').textContent = `닉네임: ${nickname}`;
           document.getElementById('colLevel').textContent = row[2];
           document.getElementById('colRank').textContent = row[3];
           document.getElementById('colExp').textContent = row[4];
