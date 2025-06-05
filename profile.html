@@ -24,7 +24,7 @@
       border-radius: 8px;
       cursor: pointer;
       margin: 10px;
-      width: 100px;
+      width: 120px;
     }
     button:hover {
       background: #00bfff;
@@ -38,27 +38,25 @@
   <button onclick="alert('업데이트 예정입니다')">내전</button>
   <button onclick="alert('업데이트 예정입니다')">상점</button>
   <button onclick="alert('업데이트 예정입니다')">업적</button>
+  <button onclick="changeNickname()">닉네임 변경</button>
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) {
+    const nickname = localStorage.getItem('nickname');
+
+    if (!userId || !nickname) {
       window.location.href = 'login.html';
     } else {
-      const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
-      
-      fetch(SHEET_CSV)
-        .then(res => res.text())
-        .then(csv => {
-          const lines = csv.trim().split('\n');
-          const data = lines.slice(1).map(line => line.split(','));
-          const row = data.find(r => r[0] === userId);
-          if (row) {
-            const nickname = row[1];
-            document.getElementById('userDisplay').textContent = `닉네임: ${nickname}`;
-          } else {
-            document.getElementById('userDisplay').textContent = `아이디: ${userId} (닉네임 없음)`;
-          }
-        });
+      document.getElementById('userDisplay').textContent += nickname;
+    }
+
+    function changeNickname() {
+      const newNick = prompt("새 닉네임을 입력하세요:");
+      if (newNick && newNick.trim().length > 0) {
+        localStorage.setItem('nickname', newNick.trim());
+        document.getElementById('userDisplay').textContent = "닉네임: " + newNick.trim();
+        alert("닉네임이 변경되었습니다.");
+      }
     }
   </script>
 </body>
