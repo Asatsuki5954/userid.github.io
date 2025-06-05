@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <h2 id="userInfo">로그인한 사용자: </h2>
+  <h2 id="userInfo">닉네임: </h2>
   <table>
     <tr><th>농농단 레벨</th><td id="colLevel"></td></tr>
     <tr><th>직위</th><td id="colRank"></td></tr>
@@ -49,7 +49,6 @@
   <script>
     const userId = localStorage.getItem('userId');
     if (!userId) window.location.href = 'login.html';
-    document.getElementById('userInfo').textContent += userId;
 
     const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
 
@@ -60,14 +59,16 @@
         const data = lines.slice(1).map(l => l.split(','));
         const row = data.find(r => r[0] === userId);
         if (row) {
-          document.getElementById('colRank').textContent = row[2];
-          document.getElementById('colLevel').textContent = row[1];
-          document.getElementById('colExp').textContent = row[3];
-          document.getElementById('colChuniz').textContent = row[4];
-          document.getElementById('colRating').textContent = row[5];
-          document.getElementById('colOverpower').textContent = row[6];
-          document.getElementById('colTeamPo').textContent = row[7];
-          document.getElementById('colNP').textContent = row[8];
+          const nickname = row[1];
+          document.getElementById('userInfo').textContent = `닉네임: ${nickname}`;
+          document.getElementById('colLevel').textContent = row[2];
+          document.getElementById('colRank').textContent = row[3];
+          document.getElementById('colExp').textContent = row[4];
+          document.getElementById('colChuniz').textContent = row[5];
+          document.getElementById('colRating').textContent = row[6];
+          document.getElementById('colOverpower').textContent = row[7];
+          document.getElementById('colTeamPo').textContent = row[8];
+          document.getElementById('colNP').textContent = row[9];
         }
       });
   </script>
