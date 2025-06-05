@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>로그인</title>
   <style>
     body {
@@ -51,21 +50,18 @@
   </div>
 
   <script>
-    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?gid=334917682&single=true&output=csv';
+    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?output=csv';
 
     function login() {
-      const inputId = document.getElementById('userId').value.trim();
-
+      const id = document.getElementById('userId').value.trim();
       fetch(SHEET_CSV)
         .then(res => res.text())
         .then(csv => {
-          const lines = csv.trim().split('\n');
-          const data = lines.slice(1).map(line => line.split(','));
-          const userRow = data.find(row => row[0] === inputId);
-
+          const rows = csv.trim().split('\n').map(r => r.split(','));
+          const userRow = rows.find(row => row[0] === id);
           if (userRow) {
             const nickname = userRow[1];
-            localStorage.setItem('userId', inputId);
+            localStorage.setItem('userId', id);
             localStorage.setItem('nickname', nickname);
             window.location.href = 'profile.html';
           } else {
