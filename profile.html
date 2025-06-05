@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>프로필</title>
   <style>
     body {
@@ -24,7 +23,7 @@
       border-radius: 8px;
       cursor: pointer;
       margin: 10px;
-      width: 140px;
+      width: 100px;
     }
     button:hover {
       background: #00bfff;
@@ -33,39 +32,19 @@
 </head>
 <body>
   <h2 id="userDisplay">닉네임: </h2>
-
   <button onclick="location.href='info.html'">정보</button>
   <button onclick="location.href='teampoint.html'">팀포</button>
   <button onclick="alert('업데이트 예정입니다')">내전</button>
   <button onclick="alert('업데이트 예정입니다')">상점</button>
   <button onclick="alert('업데이트 예정입니다')">업적</button>
-  <button id="nicknameBtn">닉네임 변경</button>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const userId = localStorage.getItem('userId');
-      let nickname = localStorage.getItem('nickname');
-
-      if (!userId) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      if (!nickname) {
-        nickname = userId; // 닉네임이 없을 경우 fallback으로 아이디 사용
-      }
-
+    const nickname = localStorage.getItem('nickname');
+    if (nickname) {
       document.getElementById('userDisplay').textContent += nickname;
-
-      document.getElementById('nicknameBtn').addEventListener('click', () => {
-        const newNick = prompt("새 닉네임을 입력하세요:");
-        if (newNick && newNick.trim().length > 0) {
-          localStorage.setItem('nickname', newNick.trim());
-          document.getElementById('userDisplay').textContent = "닉네임: " + newNick.trim();
-          alert("닉네임이 변경되었습니다.");
-        }
-      });
-    });
+    } else {
+      window.location.href = 'login.html';
+    }
   </script>
 </body>
 </html>
