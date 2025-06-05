@@ -47,6 +47,8 @@
 <body>
 
   <h2 id="userDisplay">로그인한 사용자: </h2>
+
+  <!-- 본인 점수 테이블 -->
   <table id="pointTable">
     <tr><th>항목</th><th>값</th></tr>
     <tr><td class="bold">총합</td><td id="total" class="bold">-</td></tr>
@@ -58,6 +60,17 @@
     <tr class="divider-row"><td class="bold">총합</td><td id="total2" class="bold">-</td></tr>
   </table>
 
+  <!-- 랭킹 테이블 -->
+  <h2 style="margin-top: 60px;">월별 랭킹 (1~3등)</h2>
+  <table id="rankingTable">
+    <tr><th>월</th><th>1등</th><th>2등</th><th>3등</th></tr>
+    <tr><td>3월</td><td id="rank-march-1">-</td><td id="rank-march-2">-</td><td id="rank-march-3">-</td></tr>
+    <tr><td>4월</td><td id="rank-april-1">-</td><td id="rank-april-2">-</td><td id="rank-april-3">-</td></tr>
+    <tr><td>5월</td><td id="rank-may-1">-</td><td id="rank-may-2">-</td><td id="rank-may-3">-</td></tr>
+    <tr><td>6월</td><td id="rank-june-1">-</td><td id="rank-june-2">-</td><td id="rank-june-3">-</td></tr>
+    <tr><td>7월</td><td id="rank-july-1">-</td><td id="rank-july-2">-</td><td id="rank-july-3">-</td></tr>
+  </table>
+
   <script>
     const userId = localStorage.getItem('userId');
     if (!userId) {
@@ -67,29 +80,42 @@
 
     document.getElementById('userDisplay').textContent += userId;
 
-    // Google 시트의 CSV 링크 가져오기 (단, 공개설정 필요!)
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFSrbn2x2kSN4mwfZVd15I79vA4KCiZZ4KmupZVejjQXlasv22eUrZAlYwUTO3xO1E-TRozZ0uPb3i/pub?output=csv';
 
     fetch(sheetUrl)
       .then(response => response.text())
       .then(csvText => {
-        const rows = csvText.trim().split('\n').map(row => row.split(','));
-        const header = rows[0];
+        const rows = csvText.trim().split('\n').map(row => row.map(cell => cell.trim()));
         const dataRows = rows.slice(1);
 
+        // 사용자 점수 표시
         const userRow = dataRows.find(row => row[0] === userId);
-        if (!userRow) {
+        if (userRow) {
+          document.getElementById('total').textContent = userRow[1] || '-';
+          document.getElementById('march').textContent = userRow[2] || '-';
+          document.getElementById('april').textContent = userRow[3] || '-';
+          document.getElementById('may').textContent = userRow[4] || '-';
+          document.getElementById('june').textContent = userRow[5] || '-';
+          document.getElementById('july').textContent = userRow[6] || '-';
+          document.getElementById('total2').textContent = userRow[1] || '-';
+        } else {
           alert("사용자 정보를 찾을 수 없습니다.");
-          return;
         }
 
-        document.getElementById('total').textContent = userRow[1] || '-';
-        document.getElementById('march').textContent = userRow[2] || '-';
-        document.getElementById('april').textContent = userRow[3] || '-';
-        document.getElementById('may').textContent = userRow[4] || '-';
-        document.getElementById('june').textContent = userRow[5] || '-';
-        document.getElementById('july').textContent = userRow[6] || '-';
-        document.getElementById('total2').textContent = userRow[1] || '-';
+        // 월별 랭킹 계산
+        const monthIndexes = { march: 2, april: 3, may: 4, june: 5, july: 6 };
+        for (const [month, colIndex] of Object.entries(monthIndexes)) {
+          const monthScores = dataRows
+            .map(row => ({ name: row[0], score: parseFloat(row[colIndex]) }))
+            .filter(item => !isNaN(item.score))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3);
+
+          for (let i = 0; i < 3; i++) {
+            const cell = document.getElementById(`rank-${month}-${i + 1}`);
+            cell.textContent = monthScores[i]?.name || '-';
+          }
+        }
       })
       .catch(error => {
         console.error("CSV 불러오기 실패:", error);
