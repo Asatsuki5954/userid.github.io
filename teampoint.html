@@ -73,73 +73,67 @@
 
   <script>
     const userId = localStorage.getItem('userId');
-    const userNickname = localStorage.getItem('nickname');
-
-    if (!userId || !userNickname) {
+    if (!userId) {
       alert("로그인이 필요합니다.");
       window.location.href = 'login.html';
     }
 
-    document.getElementById('userDisplay').textContent += userNickname;
+    // 닉네임 시트 먼저 불러오기
+    const nicknameSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?output=csv';
+    const teamPointSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFSrbn2x2kSN4mwfZVd15I79vA4KCiZZ4KmupZVejjQXlasv22eUrZAlYwUTO3xO1E-TRozZ0uPb3i/pub?output=csv';
 
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?output=csv';
-
-    fetch(sheetUrl)
-      .then(response => response.text())
-      .then(csvText => {
-        const rows = csvText.trim().split('\n').map(row => row.split(',').map(cell => cell.trim()));
-        const headers = rows[0]; // 헤더 포함
-        const dataRows = rows.slice(1);
-
-        // ID => 닉네임 맵핑
+    fetch(nicknameSheetUrl)
+      .then(res => res.text())
+      .then(nickCsv => {
+        const nickRows = nickCsv.trim().split('\n').map(r => r.split(',').map(c => c.trim()));
         const nicknameMap = {};
-        dataRows.forEach(row => {
+        nickRows.slice(1).forEach(row => {
           if (row[0] && row[1]) nicknameMap[row[0]] = row[1];
         });
 
-        // 본인 데이터 찾기
-        const userRow = dataRows.find(row => row[0] === userId);
-        if (userRow) {
-          document.getElementById('total').textContent = userRow[8] || '-';
-          document.getElementById('march').textContent = userRow[10] || '-';
-          document.getElementById('april').textContent = userRow[11] || '-';
-          document.getElementById('may').textContent = userRow[12] || '-';
-          document.getElementById('june').textContent = userRow[13] || '-';
-          document.getElementById('july').textContent = userRow[14] || '-';
-          document.getElementById('total2').textContent = userRow[8] || '-';
-        } else {
-          alert("사용자 정보를 찾을 수 없습니다.");
-        }
+        const myNickname = nicknameMap[userId] || userId;
+        document.getElementById('userDisplay').textContent += myNickname;
 
-        // 랭킹 처리
-        const monthIndexes = {
-          march: 10,
-          april: 11,
-          may: 12,
-          june: 13,
-          july: 14
-        };
+        // 이제 팀포인트 시트 불러오기
+        return fetch(teamPointSheetUrl).then(res => res.text()).then(csv => {
+          const rows = csv.trim().split('\n').map(r => r.split(',').map(c => c.trim()));
+          const dataRows = rows.slice(1);
 
-        for (const [month, colIndex] of Object.entries(monthIndexes)) {
-          const monthScores = dataRows
-            .map(row => ({
-              id: row[0],
-              nickname: nicknameMap[row[0]] || row[0],
-              score: parseFloat(row[colIndex])
-            }))
-            .filter(item => !isNaN(item.score))
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 3);
-
-          for (let i = 0; i < 3; i++) {
-            const cell = document.getElementById(`rank-${month}-${i + 1}`);
-            cell.textContent = monthScores[i]?.nickname || '-';
+          // 본인 점수 표시
+          const myRow = dataRows.find(row => row[0] === userId);
+          if (myRow) {
+            document.getElementById('total').textContent = myRow[1] || '-';
+            document.getElementById('march').textContent = myRow[2] || '-';
+            document.getElementById('april').textContent = myRow[3] || '-';
+            document.getElementById('may').textContent = myRow[4] || '-';
+            document.getElementById('june').textContent = myRow[5] || '-';
+            document.getElementById('july').textContent = myRow[6] || '-';
+            document.getElementById('total2').textContent = myRow[1] || '-';
           }
-        }
+
+          // 랭킹 표시
+          const monthIndexes = { march: 2, april: 3, may: 4, june: 5, july: 6 };
+          for (const [month, colIndex] of Object.entries(monthIndexes)) {
+            const sorted = dataRows
+              .map(row => ({
+                id: row[0],
+                nickname: nicknameMap[row[0]] || row[0],
+                score: parseFloat(row[colIndex])
+              }))
+              .filter(item => !isNaN(item.score))
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 3);
+
+            for (let i = 0; i < 3; i++) {
+              const cell = document.getElementById(`rank-${month}-${i + 1}`);
+              cell.textContent = sorted[i]?.nickname || '-';
+            }
+          }
+        });
       })
       .catch(error => {
-        console.error("CSV 불러오기 실패:", error);
-        alert("데이터를 불러오지 못했습니다.");
+        console.error("데이터 로딩 실패:", error);
+        alert("데이터를 불러오는 중 오류가 발생했습니다.");
       });
   </script>
 
