@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>퀘스트 페이지</title>
+  <style>
+    body {
+      background: #e0f7ff;
+      font-family: 'Noto Sans KR', sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    h2 {
+      color: #007acc;
+      margin-bottom: 20px;
+    }
+    button#questBtn {
+      padding: 12px 24px;
+      font-size: 18px;
+      background-color: #87ceeb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button#questBtn:hover {
+      background-color: #00bfff;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 600px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    td.empty {
+      background-color: white;
+    }
+    td.filled {
+      background-color: #b0e0e6;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>퀘스트 페이지</h2>
+  <button id="questBtn">퀘스트 확인</button>
+
+  <div id="questTableContainer"></div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+
+    document.getElementById('questBtn').addEventListener('click', () => {
+      if (userId === 'asatsuki5954') {
+        loadQuestTable();
+      } else {
+        alert('업데이트 예정입니다');
+      }
+    });
+
+    function loadQuestTable() {
+      const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?output=csv';
+      fetch(SHEET_CSV)
+        .then(res => res.text())
+        .then(csv => {
+          const rows = csv.trim().split('\n').map(r => r.split(',').map(c => c.trim()));
+          const headerRow = rows[0];
+          const dataRows = rows.slice(1);
+
+          let maxCol = 0;
+          dataRows.forEach(r => {
+            for (let i = 0; i < r.length; i++) {
+              if (r[i] !== '') {
+                maxCol = Math.max(maxCol, i);
+              }
+            }
+          });
+
+          const container = document.getElementById('questTableContainer');
+          const table = document.createElement('table');
+          const thead = document.createElement('thead');
+          const trHead = document.createElement('tr');
+
+          for (let c = 0; c <= maxCol; c++) {
+            const th = document.createElement('th');
+            th.textContent = headerRow[c] || '';
+            trHead.appendChild(th);
+          }
+          thead.appendChild(trHead);
+          table.appendChild(thead);
+
+          const tbody = document.createElement('tbody');
+          dataRows.forEach(r => {
+            const tr = document.createElement('tr');
+            for (let c = 0; c <= maxCol; c++) {
+              const td = document.createElement('td');
+              const cell = r[c] || '';
+              td.textContent = cell;
+              td.className = cell === '' ? 'empty' : 'filled';
+              tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+
+          container.innerHTML = '';
+          container.appendChild(table);
+        })
+        .catch(err => {
+          console.error('CSV 불러오기 실패:', err);
+          alert('데이터를 불러오지 못했습니다.');
+        });
+    }
+  </script>
+
+</body>
+</html>
