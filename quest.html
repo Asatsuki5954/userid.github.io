@@ -10,98 +10,91 @@
       padding: 20px;
       text-align: center;
     }
-    h2 {
-      color: #007acc;
-      margin-bottom: 20px;
-    }
     table {
-      margin: 0 auto;
+      margin: 20px auto;
       border-collapse: collapse;
       width: 90%;
-      max-width: 800px;
+      max-width: 600px;
     }
     th, td {
       border: 1px solid #888;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
     }
-    td.true {
+    tr.true-row {
       background-color: #ccffcc;
-    }
-    td.false {
-      background-color: white;
     }
   </style>
 </head>
 <body>
   <h2>퀘스트 확인</h2>
-  <div id="tableContainer"></div>
+  <div id="tableContainer">로그인된 사용자에게 해당하는 퀘스트가 여기에 표시됩니다.</div>
 
   <script>
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      alert("로그인이 필요합니다.");
+      alert('로그인이 필요합니다.');
       location.href = 'login.html';
-      throw new Error("로그인 필요");
+      throw new Error('로그인 필요');
     }
 
-    // CSV 주소 (행: 퀘스트 항목, 열: 사용자별 보상, check)
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?output=csv';
 
     fetch(CSV_URL)
       .then(res => res.text())
       .then(csvText => {
         const rows = csvText.trim().split('\n')
-                         .map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
-        const header = rows[0]; // ["userid", "reina", "보상", "check", "asatsuki5954", "보상", "check", ...]
+          .map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+        const headers = rows[0]; // ["userid", "asatsuki5954", "보상", "check"]
         const dataRows = rows.slice(1);
 
-        // 로그인한 유저 열 인덱스 찾기
-        const userCols = [];
-        for (let i = 1; i < header.length; i += 3) {
-          userCols.push({
-            id: header[i],
-            colQuest: i - 1,
-            colReward: i,
-            colCheck: i + 1
-          });
-        }
-        const myCol = userCols.find(c => c.id === userId);
-        if (!myCol) {
-          document.getElementById('tableContainer').textContent = '퀘스트 없음';
+        const idIndex = headers.indexOf(userId);
+        const rewardIndex = headers.indexOf('보상');
+        const checkIndex = headers.indexOf('check');
+
+        if (idIndex < 0 || rewardIndex < 0 || checkIndex < 0) {
+          document.getElementById('tableContainer').textContent = `CSV에 '${userId}', '보상', 'check' 열이 없습니다.`;
           return;
         }
 
         // 테이블 생성
         const table = document.createElement('table');
         const thead = document.createElement('thead');
-        const trHead = document.createElement('tr');
-        trHead.innerHTML = `<th>퀘스트</th><th>보상</th><th>완료</th>`;
-        thead.appendChild(trHead);
+        thead.innerHTML = `
+          <tr>
+            <th>userid</th>
+            <th>${userId}</th>
+            <th>보상</th>
+            <th>완료</th>
+          </tr>`;
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
         dataRows.forEach(row => {
           const quest = row[0];
-          const reward = row[myCol.colReward] || '';
-          const isDone = row[myCol.colCheck] === 'true';
-
+          const reward = row[rewardIndex] || '';
+          const checkVal = (row[checkIndex] || '').toLowerCase() === 'true';
+          const mark = checkVal ? 'O' : 'X';
           const tr = document.createElement('tr');
+          if (checkVal) tr.classList.add('true-row');
+
           tr.innerHTML = `
             <td>${quest}</td>
+            <td>${quest || ''}</td>
             <td>${reward}</td>
-            <td>${isDone ? 'O' : 'X'}</td>`;
-          tr.querySelector('td:nth-child(3)')
-            .className = isDone ? 'true' : 'false';
+            <td>${mark}</td>
+          `;
           tbody.appendChild(tr);
         });
         table.appendChild(tbody);
 
-        document.getElementById('tableContainer').appendChild(table);
+        const container = document.getElementById('tableContainer');
+        container.innerHTML = '';
+        container.appendChild(table);
       })
       .catch(err => {
         console.error(err);
-        alert('퀘스트 데이터를 불러오지 못했습니다.');
+        document.getElementById('tableContainer').textContent = '퀘스트 데이터를 불러오는 중 오류 발생';
       });
   </script>
 </body>
