@@ -2,103 +2,111 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>퀘스트 확인</title>
+  <title>퀘스트</title>
   <style>
     body {
-      background: #e0f7ff;
+      background: #f5faff;
       font-family: 'Noto Sans KR', sans-serif;
-      padding: 20px;
+      padding: 30px;
       text-align: center;
+    }
+    h2 {
+      color: #007acc;
     }
     table {
+      width: 90%;
       margin: 20px auto;
       border-collapse: collapse;
-      width: 90%;
-      max-width: 600px;
-      background-color: white;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     th, td {
-      border: 1px solid #888;
-      padding: 10px;
+      padding: 12px;
+      border: 1px solid #ccc;
       text-align: center;
-      background-color: white; /* ✅ 기본 배경은 흰색 */
     }
-    tr.true-row td {
-      background-color: #ccffcc !important; /* ✅ 완료된 퀘스트만 연두색 */
+    th {
+      background-color: #d0f0ff;
+    }
+    tr.completed {
+      background-color: #d9fdd3;
+    }
+    tr.separator-row td {
+      background: #f0f8ff;
+      font-weight: bold;
+      color: #007acc;
     }
   </style>
 </head>
 <body>
-  <h2>퀘스트 확인</h2>
-  <div id="tableContainer">로그인된 사용자에게 해당하는 퀘스트가 여기에 표시됩니다.</div>
+  <h2>개인 퀘스트</h2>
+  <table id="questTable">
+    <thead>
+      <tr>
+        <th>퀘스트 ID</th>
+        <th>내용</th>
+        <th>보상</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) {
-      alert('로그인이 필요합니다.');
-      window.location.href = 'login.html';
-      throw new Error('로그인 필요');
-    }
+    if (userId !== 'asatsuki5954') {
+      alert('업데이트 예정입니다');
+      document.body.innerHTML = '<h2>업데이트 예정입니다</h2>';
+    } else {
+      const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?output=csv';
 
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?output=csv';
+      fetch(sheetUrl)
+        .then(res => res.text())
+        .then(csv => {
+          const lines = csv.trim().split('\n');
+          const header = lines[0].split(',');
+          const userIdx = header.indexOf(userId);
+          const rewardIdx = header.indexOf('보상');
+          const checkIdx = header.indexOf('check');
 
-    fetch(CSV_URL)
-      .then(res => res.text())
-      .then(csvText => {
-        const rows = csvText.trim().split('\n')
-          .map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
-        const headers = rows[0];
-        const dataRows = rows.slice(1);
+          const tbody = document.querySelector('#questTable tbody');
 
-        const idIndex = headers.indexOf(userId);
-        const rewardIndex = headers.indexOf('보상');
-        const checkIndex = headers.indexOf('check');
+          for (let i = 1; i < lines.length; i++) {
+            const row = lines[i].split(',');
+            const questId = row[0]?.trim();
+            const content = row[userIdx]?.trim();
+            const reward = row[rewardIdx]?.trim();
+            const isChecked = row[checkIdx]?.trim() === 'true';
 
-        if (idIndex < 0 || rewardIndex < 0 || checkIndex < 0) {
-          document.getElementById('tableContainer').textContent = `'${userId}', '보상', 또는 'check' 열을 찾을 수 없습니다.`;
-          return;
-        }
+            if (!questId && !content && !reward) {
+              const sepRow = document.createElement('tr');
+              sepRow.className = 'separator-row';
+              const sepCell = document.createElement('td');
+              sepCell.colSpan = 4;
+              sepCell.textContent = '\u25BC';
+              sepRow.appendChild(sepCell);
+              tbody.appendChild(sepRow);
+              continue;
+            }
 
-        const table = document.createElement('table');
-        const thead = document.createElement('thead');
-        thead.innerHTML = `
-          <tr>
-            <th>퀘스트 ID</th>
-            <th>내용</th>
-            <th>보상</th>
-            <th>완료</th>
-          </tr>`;
-        table.appendChild(thead);
+            const tr = document.createElement('tr');
+            if (isChecked) tr.classList.add('completed');
 
-        const tbody = document.createElement('tbody');
-        dataRows.forEach(row => {
-          const questId = row[0] || '';
-          const questContent = row[idIndex] || '';
-          const reward = row[rewardIndex] || '';
-          const isChecked = (row[checkIndex] || '').toLowerCase() === 'true';
-          const mark = isChecked ? 'O' : 'X';
+            tr.innerHTML = `
+              <td>${questId || '-'}</td>
+              <td>${content || '-'}</td>
+              <td>${reward || '-'}</td>
+              <td>${isChecked ? 'O' : 'X'}</td>
+            `;
 
-          const tr = document.createElement('tr');
-          if (isChecked) tr.classList.add('true-row');
-
-          tr.innerHTML = `
-            <td>${questId}</td>
-            <td>${questContent}</td>
-            <td>${reward}</td>
-            <td>${mark}</td>
-          `;
-          tbody.appendChild(tr);
+            tbody.appendChild(tr);
+          }
+        })
+        .catch(err => {
+          console.error('CSV 로딩 오류:', err);
+          alert('퀘스트 데이터를 불러오는 데 실패했습니다.');
         });
-
-        table.appendChild(tbody);
-        const container = document.getElementById('tableContainer');
-        container.innerHTML = '';
-        container.appendChild(table);
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById('tableContainer').textContent = '퀘스트 데이터를 불러오는 중 오류 발생';
-      });
+    }
   </script>
 </body>
 </html>
