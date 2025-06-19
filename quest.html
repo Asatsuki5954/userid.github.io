@@ -15,14 +15,16 @@
       border-collapse: collapse;
       width: 90%;
       max-width: 600px;
+      background-color: white;
     }
     th, td {
       border: 1px solid #888;
       padding: 10px;
       text-align: center;
+      background-color: white; /* ✅ 기본 배경은 흰색 */
     }
-    tr.true-row {
-      background-color: #ccffcc;
+    tr.true-row td {
+      background-color: #ccffcc !important; /* ✅ 완료된 퀘스트만 연두색 */
     }
   </style>
 </head>
@@ -34,7 +36,7 @@
     const userId = localStorage.getItem('userId');
     if (!userId) {
       alert('로그인이 필요합니다.');
-      location.href = 'login.html';
+      window.location.href = 'login.html';
       throw new Error('로그인 필요');
     }
 
@@ -45,7 +47,7 @@
       .then(csvText => {
         const rows = csvText.trim().split('\n')
           .map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
-        const headers = rows[0]; // ["userid", "asatsuki5954", "보상", "check"]
+        const headers = rows[0];
         const dataRows = rows.slice(1);
 
         const idIndex = headers.indexOf(userId);
@@ -53,17 +55,16 @@
         const checkIndex = headers.indexOf('check');
 
         if (idIndex < 0 || rewardIndex < 0 || checkIndex < 0) {
-          document.getElementById('tableContainer').textContent = `CSV에 '${userId}', '보상', 'check' 열이 없습니다.`;
+          document.getElementById('tableContainer').textContent = `'${userId}', '보상', 또는 'check' 열을 찾을 수 없습니다.`;
           return;
         }
 
-        // 테이블 생성
         const table = document.createElement('table');
         const thead = document.createElement('thead');
         thead.innerHTML = `
           <tr>
-            <th>userid</th>
-            <th>${userId}</th>
+            <th>퀘스트 ID</th>
+            <th>내용</th>
             <th>보상</th>
             <th>완료</th>
           </tr>`;
@@ -71,23 +72,25 @@
 
         const tbody = document.createElement('tbody');
         dataRows.forEach(row => {
-          const quest = row[0];
+          const questId = row[0] || '';
+          const questContent = row[idIndex] || '';
           const reward = row[rewardIndex] || '';
-          const checkVal = (row[checkIndex] || '').toLowerCase() === 'true';
-          const mark = checkVal ? 'O' : 'X';
+          const isChecked = (row[checkIndex] || '').toLowerCase() === 'true';
+          const mark = isChecked ? 'O' : 'X';
+
           const tr = document.createElement('tr');
-          if (checkVal) tr.classList.add('true-row');
+          if (isChecked) tr.classList.add('true-row');
 
           tr.innerHTML = `
-            <td>${quest}</td>
-            <td>${quest || ''}</td>
+            <td>${questId}</td>
+            <td>${questContent}</td>
             <td>${reward}</td>
             <td>${mark}</td>
           `;
           tbody.appendChild(tr);
         });
-        table.appendChild(tbody);
 
+        table.appendChild(tbody);
         const container = document.getElementById('tableContainer');
         container.innerHTML = '';
         container.appendChild(table);
