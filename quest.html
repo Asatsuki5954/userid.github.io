@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>퀘스트 페이지</title>
+  <title>퀘스트 확인</title>
   <style>
     body {
       background: #e0f7ff;
@@ -14,109 +14,95 @@
       color: #007acc;
       margin-bottom: 20px;
     }
-    button#questBtn {
-      padding: 12px 24px;
-      font-size: 18px;
-      background-color: #87ceeb;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button#questBtn:hover {
-      background-color: #00bfff;
-    }
     table {
-      margin: 20px auto;
+      margin: 0 auto;
       border-collapse: collapse;
       width: 90%;
-      max-width: 600px;
+      max-width: 800px;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      border: 1px solid #888;
+      padding: 8px;
       text-align: center;
     }
-    td.empty {
-      background-color: white;
+    td.true {
+      background-color: #ccffcc;
     }
-    td.filled {
-      background-color: #b0e0e6;
+    td.false {
+      background-color: white;
     }
   </style>
 </head>
 <body>
-
-  <h2>퀘스트 페이지</h2>
-  <button id="questBtn">퀘스트 확인</button>
-
-  <div id="questTableContainer"></div>
+  <h2>퀘스트 확인</h2>
+  <div id="tableContainer"></div>
 
   <script>
     const userId = localStorage.getItem('userId');
-
-    document.getElementById('questBtn').addEventListener('click', () => {
-      if (userId === 'asatsuki5954') {
-        loadQuestTable();
-      } else {
-        alert('업데이트 예정입니다');
-      }
-    });
-
-    function loadQuestTable() {
-      const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?output=csv';
-      fetch(SHEET_CSV)
-        .then(res => res.text())
-        .then(csv => {
-          const rows = csv.trim().split('\n').map(r => r.split(',').map(c => c.trim()));
-          const headerRow = rows[0];
-          const dataRows = rows.slice(1);
-
-          let maxCol = 0;
-          dataRows.forEach(r => {
-            for (let i = 0; i < r.length; i++) {
-              if (r[i] !== '') {
-                maxCol = Math.max(maxCol, i);
-              }
-            }
-          });
-
-          const container = document.getElementById('questTableContainer');
-          const table = document.createElement('table');
-          const thead = document.createElement('thead');
-          const trHead = document.createElement('tr');
-
-          for (let c = 0; c <= maxCol; c++) {
-            const th = document.createElement('th');
-            th.textContent = headerRow[c] || '';
-            trHead.appendChild(th);
-          }
-          thead.appendChild(trHead);
-          table.appendChild(thead);
-
-          const tbody = document.createElement('tbody');
-          dataRows.forEach(r => {
-            const tr = document.createElement('tr');
-            for (let c = 0; c <= maxCol; c++) {
-              const td = document.createElement('td');
-              const cell = r[c] || '';
-              td.textContent = cell;
-              td.className = cell === '' ? 'empty' : 'filled';
-              tr.appendChild(td);
-            }
-            tbody.appendChild(tr);
-          });
-          table.appendChild(tbody);
-
-          container.innerHTML = '';
-          container.appendChild(table);
-        })
-        .catch(err => {
-          console.error('CSV 불러오기 실패:', err);
-          alert('데이터를 불러오지 못했습니다.');
-        });
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      location.href = 'login.html';
+      throw new Error("로그인 필요");
     }
-  </script>
 
+    // CSV 주소 (행: 퀘스트 항목, 열: 사용자별 보상, check)
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv';
+
+    fetch(CSV_URL)
+      .then(res => res.text())
+      .then(csvText => {
+        const rows = csvText.trim().split('\n')
+                         .map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+        const header = rows[0]; // ["userid", "reina", "보상", "check", "asatsuki5954", "보상", "check", ...]
+        const dataRows = rows.slice(1);
+
+        // 로그인한 유저 열 인덱스 찾기
+        const userCols = [];
+        for (let i = 1; i < header.length; i += 3) {
+          userCols.push({
+            id: header[i],
+            colQuest: i - 1,
+            colReward: i,
+            colCheck: i + 1
+          });
+        }
+        const myCol = userCols.find(c => c.id === userId);
+        if (!myCol) {
+          document.getElementById('tableContainer').textContent = '퀘스트 없음';
+          return;
+        }
+
+        // 테이블 생성
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const trHead = document.createElement('tr');
+        trHead.innerHTML = `<th>퀘스트</th><th>보상</th><th>완료</th>`;
+        thead.appendChild(trHead);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        dataRows.forEach(row => {
+          const quest = row[0];
+          const reward = row[myCol.colReward] || '';
+          const isDone = row[myCol.colCheck] === 'true';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${quest}</td>
+            <td>${reward}</td>
+            <td>${isDone ? 'O' : 'X'}</td>`;
+          tr.querySelector('td:nth-child(3)')
+            .className = isDone ? 'true' : 'false';
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        document.getElementById('tableContainer').appendChild(table);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('퀘스트 데이터를 불러오지 못했습니다.');
+      });
+  </script>
 </body>
 </html>
