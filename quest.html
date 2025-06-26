@@ -29,7 +29,7 @@
       background-color: #d0f0ff;
     }
     tr.completed td {
-      background-color: #d9fdd3; /* 연두색 */
+      background-color: #d9fdd3;
     }
     tr.separator td {
       background: #f0f8ff;
@@ -61,31 +61,27 @@
 
     document.getElementById('userDisplay').textContent += ` - ${userId}`;
 
-    // 시트 탭 이름과 연결된 사용자별 CSV 링크 생성
-    const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?output=csv';
-   const userSheetGids = {
-    "asatsuki5954": "256334409",
-    "scarlet": "1110173010",
-    "podochung55": "1261658474",
-    "Takagisensei": "82117950",
-    "cwg": "1570161623",
-    "Icekogkog": "1696927452",
-    "G.race": "125383890",
-    "GONE": "204003007",
-    "myo": "284353463",
-    "doko23": "144765952",
-    "N0ah_o5": "412592215",
-    "Hooni1212": "894561381",
-    "kth7747": "1604042184",
-    "kana": "1427835484",
-    "choa14111": "1126357601",
-    "Akane": "1732165784",
-    "sosulim": "1093433230",
-    "topieory": "1230984704",
-    "reina": "1373388423",
-    "jalja": "566804425",
-  };
-      // 각 사용자에 대한 시트 GID 추가
+    const userSheetGids = {
+      "asatsuki5954": "256334409",
+      "scarlet": "1110173010",
+      "podochung55": "1261658474",
+      "Takagisensei": "82117950",
+      "cwg": "1570161623",
+      "Icekogkog": "1696927452",
+      "G.race": "125383890",
+      "GONE": "204003007",
+      "myo": "284353463",
+      "doko23": "144765952",
+      "N0ah_o5": "412592215",
+      "Hooni1212": "894561381",
+      "kth7747": "1604042184",
+      "kana": "1427835484",
+      "choa14111": "1126357601",
+      "Akane": "1732165784",
+      "sosulim": "1093433230",
+      "topieory": "1230984704",
+      "reina": "1373388423",
+      "jalja": "566804425"
     };
 
     const gid = userSheetGids[userId];
@@ -94,7 +90,7 @@
       throw new Error("GID 정보 없음");
     }
 
-    const sheetUrl = `${baseSheetURL}${gid}&single=true&output=csv`;
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRS1ON6xB6DY-t8v21KQLsM3XnfoidHRVaPVJQQB09Cmf8V7rm_aXJmqRXZGoMelVamV8jG6T9awtXU/pub?gid=${gid}&single=true&output=csv`;
 
     fetch(sheetUrl)
       .then(res => res.text())
@@ -110,8 +106,8 @@
 
         const tbody = document.querySelector('#questTable tbody');
 
-        data.forEach((row, index) => {
-          const isSeparator = row[1] === '▽'; // questid 자리에 ▽가 들어간 경우
+        data.forEach(row => {
+          const isSeparator = row[questIdIdx] === '▽';
           if (isSeparator) {
             const sep = document.createElement('tr');
             sep.className = 'separator';
