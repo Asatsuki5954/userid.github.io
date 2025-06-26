@@ -104,26 +104,31 @@
         const header = lines[0];
         const data = lines.slice(1);
 
-        const questIdIdx = header.indexOf('questid');
+        const questIdIdx = header.findIndex(h => h.toLowerCase().includes('questid'));
         const contentIdx = header.indexOf('내용');
         const rewardIdx = header.indexOf('보상');
         const checkIdx = header.indexOf('check');
 
+        if (questIdIdx === -1) {
+          alert("questid 열이 없습니다. 시트를 확인하세요.");
+          return;
+        }
+
         const tbody = document.querySelector('#questTable tbody');
 
         data.forEach((row) => {
-          if (row[questIdIdx] === '▽') {
+          const questId = row[questIdIdx];
+          const content = row[contentIdx];
+          const reward = row[rewardIdx];
+          const checked = (row[checkIdx] || '').toLowerCase() === 'true';
+
+          if (questId === '▽') {
             const sep = document.createElement('tr');
             sep.className = 'separator';
             sep.innerHTML = '<td colspan="4">▽</td>';
             tbody.appendChild(sep);
             return;
           }
-
-          const questId = row[questIdIdx];
-          const content = row[contentIdx];
-          const reward = row[rewardIdx];
-          const checked = (row[checkIdx] || '').toLowerCase() === 'true';
 
           const tr = document.createElement('tr');
           if (checked) tr.classList.add('completed');
