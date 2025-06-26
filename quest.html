@@ -112,7 +112,7 @@
         const tbody = document.querySelector('#questTable tbody');
 
         data.forEach((row) => {
-          if (row[0] === '▽') {
+          if (row[questIdIdx] === '▽') {
             const sep = document.createElement('tr');
             sep.className = 'separator';
             sep.innerHTML = '<td colspan="4">▽</td>';
