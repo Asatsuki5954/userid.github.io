@@ -37,6 +37,9 @@
       padding: 8px 16px;
       cursor: pointer;
     }
+    button.hidden {
+      visibility: hidden;
+    }
   </style>
 </head>
 <body>
@@ -52,28 +55,26 @@
   </div>
 
   <div class="nav-buttons">
-    <button onclick="prevPage()">← 전 페이지로</button>
-    <button onclick="nextPage()">다음 페이지로 →</button>
+    <button id="prevBtn" onclick="prevPage()">← 전 페이지로</button>
+    <button id="nextBtn" onclick="nextPage()">다음 페이지로 →</button>
   </div>
 
   <script>
-    // 이미지 페이지 목록 (계속 추가 가능)
     const pages = [
       ["페이지 선택...", 0],
       ["1) 메인화면 소개", 1],
       ["2) 업적", 2],
       ["3) 정보", 3],
       ["4) 팀포", 4],
-      ["5) 퀘스트1", 5]
+      ["5) 퀘스트1", 5],
       ["6) 퀘스트2", 6]
     ];
 
     let currentPage = 0;
 
-    // 드롭다운에 항목 추가
-    window.onload = function() {
+    window.onload = function () {
       const select = document.getElementById('pageSelect');
-      pages.forEach((page, index) => {
+      pages.forEach((page) => {
         const option = document.createElement("option");
         option.value = page[1];
         option.text = page[0];
@@ -105,10 +106,19 @@
 
     function updateImage() {
       document.getElementById('helpImage').src = `help${currentPage}.png`;
+      updateButtons();
     }
 
     function updateSelect() {
       document.getElementById('pageSelect').value = currentPage;
+    }
+
+    function updateButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      prevBtn.classList.toggle('hidden', currentPage === 0);
+      nextBtn.classList.toggle('hidden', currentPage === pages.length - 1);
     }
   </script>
 
