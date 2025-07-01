@@ -44,11 +44,11 @@
   <h1>농농단 위키</h1>
 
   <select id="pageSelect" onchange="changePage(this.value)">
-    <!-- 옵션이 JS에서 자동으로 추가됨 -->
+    <!-- 옵션은 JS에서 자동으로 추가됩니다 -->
   </select>
 
   <div>
-    <img id="helpImage" src="img/help0.png" alt="도움말 이미지">
+    <img id="helpImage" src="help0.png" alt="도움말 이미지">
   </div>
 
   <div class="nav-buttons">
@@ -57,21 +57,20 @@
   </div>
 
   <script>
-    // 페이지 정보 배열: [표시 이름, 이미지 파일 이름 끝번호]
+    // 이미지 페이지 목록 (계속 추가 가능)
     const pages = [
-      ["페이지 선택...", 0],            // 기본
+      ["페이지 선택...", 0],
       ["1) 메인화면 소개", 1],
       ["2) 업적", 2],
       ["3) 프로필", 3],
-      ["4) ???", 4],                  // 앞으로 추가될 내용
-      ["5) ???", 5],
-      ["6) ???", 6]
-      // 계속 추가 가능
+      ["4) ???", 4],
+      ["5) ???", 5]
+      // ["6) 추가 설명", 6] 이런 식으로 추가 가능
     ];
 
     let currentPage = 0;
 
-    // 드롭다운 옵션 자동 생성
+    // 드롭다운에 항목 추가
     window.onload = function() {
       const select = document.getElementById('pageSelect');
       pages.forEach((page, index) => {
@@ -105,7 +104,7 @@
     }
 
     function updateImage() {
-      document.getElementById('helpImage').src = `img/help${currentPage}.png`;
+      document.getElementById('helpImage').src = `help${currentPage}.png`;
     }
 
     function updateSelect() {
