@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>상점</title>
+  <style>
+    body {
+      background-color: #f5faff;
+      font-family: 'Noto Sans KR', sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+    h1 {
+      color: #007acc;
+    }
+    .shop-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .shop-item {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .shop-item:hover {
+      transform: scale(1.03);
+    }
+    .item-image {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .item-name {
+      font-weight: bold;
+      font-size: 18px;
+      margin: 10px 0 5px;
+    }
+    .item-desc {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .item-price {
+      color: #007acc;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>상점</h1>
+  <div class="shop-container">
+    <!-- 아이템 1 -->
+    <div class="shop-item">
+      <img class="item-image" src="item1.png" alt="상품1">
+      <div class="item-name">몬스터</div>
+      <div class="item-desc">몬스터 맛을 선택하시면 됩니다.</div>
+      <div class="item-price">2500 NP</div>
+    </div>
+
+    <!-- 아이템 2 -->
+    <div class="shop-item">
+      <img class="item-image" src="item2.png" alt="가챠1">
+      <div class="item-name">가챠권(하급)</div>
+      <div class="item-desc">농농단 팀원 2명에게 400np를 보냅니다. 대신 본인이 걸릴시 2배인 2000np를 획득합니다. 1달에 1회 구매가능합니다. </div>
+      <div class="item-price">1000 NP</div>
+    </div>
+
+    <!-- 아이템 3 -->
+    <div class="shop-item">
+      <img class="item-image" src="item3.png" alt="오락1">
+      <div class="item-name">오락실 대여</div>
+      <div class="item-desc">오락실 대여(무크, 프리플레이, 크레딧)을 이용할 수 있습니다.</div>
+      <div class="item-price">드는 가격만큼 NP 사용</div>
+    </div>
+  </div>
+
+</body>
+</html>
