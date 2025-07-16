@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입</title>
+</head>
+<body>
+  <h2>회원가입 (관리자 전용)</h2>
+  <input type="text" id="newUser" placeholder="아이디 입력">
+  <button onclick="register()">회원가입</button>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFda0Qg08bLdRMAwRmQc88aM_mG0sJccQ",
+      authDomain: "nongnong-web.firebaseapp.com",
+      projectId: "nongnong-web",
+      storageBucket: "nongnong-web.firebasestorage.app",
+      messagingSenderId: "760193644874",
+      appId: "1:760193644874:web:d0f940fbd878cadf4d69b3",
+      measurementId: "G-MDZ1C0T65E"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    async function register() {
+      const username = document.getElementById("newUser").value.trim();
+      if (!username) {
+        alert("아이디를 입력하세요.");
+        return;
+      }
+
+      const email = username + "@custom.com";
+      const password = "defaultPassword";
+
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        alert("회원가입 성공: " + username);
+      } catch (error) {
+        alert("회원가입 실패: " + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
