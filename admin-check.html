@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 인증</title>
+</head>
+<body>
+  <h2>회원가입 관리자 확인</h2>
+  <input type="password" id="adminPass" placeholder="관리자 비밀번호">
+  <button onclick="verify()">확인</button>
+
+  <script>
+    function verify() {
+      const password = document.getElementById("adminPass").value;
+      if (password === "nongww") {
+        window.location.href = "register.html";
+      } else {
+        alert("비밀번호가 틀렸습니다.");
+      }
+    }
+  </script>
+</body>
+</html>
