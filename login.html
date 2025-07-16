@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>로그인</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
   <style>
     body {
       background: #e0f7ff;
@@ -50,16 +49,17 @@
 <body>
   <div class="login-box">
     <h2>아이디 로그인</h2>
-    <input type="text" id="username" placeholder="아이디 입력">
-    <button onclick="login()">로그인</button>
-    <button onclick="goToRegister()">회원가입</button>
+    <input type="text" id="username" placeholder="아이디 입력" />
+    <button id="loginBtn">로그인</button>
+    <button id="registerBtn">회원가입</button>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDKs (v10 modular style, non-import version) -->
   <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
 
   <script>
+    // Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBFda0Qg08bLdRMAwRmQc88aM_mG0sJccQ",
       authDomain: "nongnong-web.firebaseapp.com",
@@ -70,11 +70,14 @@
       measurementId: "G-MDZ1C0T65E"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    // Firebase 초기화
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth.getAuth(app);
+    const signInWithEmailAndPassword = firebase.auth.signInWithEmailAndPassword;
 
+    // 로그인 함수
     async function login() {
-      const username = document.getElementById('username').value.trim();
+      const username = document.getElementById("username").value.trim();
       if (!username) {
         alert("아이디를 입력해주세요.");
         return;
@@ -84,7 +87,7 @@
       const password = "defaultPassword";
 
       try {
-        await auth.signInWithEmailAndPassword(email, password);
+        await signInWithEmailAndPassword(auth, email, password);
         alert("로그인 성공!");
         localStorage.setItem("username", username);
         window.location.href = "main.html";
@@ -97,9 +100,14 @@
       }
     }
 
+    // 회원가입 버튼 클릭
     function goToRegister() {
       window.location.href = "admin-check.html";
     }
+
+    // 이벤트 연결
+    document.getElementById("loginBtn").addEventListener("click", login);
+    document.getElementById("registerBtn").addEventListener("click", goToRegister);
   </script>
 </body>
 </html>
