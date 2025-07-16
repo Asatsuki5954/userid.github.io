@@ -51,15 +51,14 @@
     <h2>아이디 로그인</h2>
     <input type="text" id="username" placeholder="아이디 입력" />
     <button id="loginBtn">로그인</button>
-    <button id="registerBtn">회원가입</button>
+    <button id="registerBtn" type="button">회원가입</button>
   </div>
 
-  <!-- Firebase SDKs (v10 modular style, non-import version) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
 
   <script>
-    // Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBFda0Qg08bLdRMAwRmQc88aM_mG0sJccQ",
       authDomain: "nongnong-web.firebaseapp.com",
@@ -70,12 +69,10 @@
       measurementId: "G-MDZ1C0T65E"
     };
 
-    // Firebase 초기화
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth.getAuth(app);
     const signInWithEmailAndPassword = firebase.auth.signInWithEmailAndPassword;
 
-    // 로그인 함수
     async function login() {
       const username = document.getElementById("username").value.trim();
       if (!username) {
@@ -100,12 +97,10 @@
       }
     }
 
-    // 회원가입 버튼 클릭
     function goToRegister() {
       window.location.href = "admin-check.html";
     }
 
-    // 이벤트 연결
     document.getElementById("loginBtn").addEventListener("click", login);
     document.getElementById("registerBtn").addEventListener("click", goToRegister);
   </script>
