@@ -3,71 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <title>로그인</title>
-  <style>
-    body {
-      background: #e0f7ff;
-      font-family: 'Noto Sans KR', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .login-box {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
-      width: 200px;
-      border: 1px solid #87ceeb;
-      border-radius: 6px;
-      margin-bottom: 10px;
-    }
-    button {
-      background: #87ceeb;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #00bfff;
-    }
-  </style>
 </head>
 <body>
-  <div class="login-box">
-    <h2>로그인</h2>
-    <input type="text" id="userId" placeholder="아이디 입력">
-    <br>
-    <button onclick="login()">로그인</button>
-  </div>
+  <h2>아이디로 로그인</h2>
+  <input type="text" id="username" placeholder="아이디를 입력하세요">
+  <button onclick="login()">로그인</button>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
 
   <script>
-    const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDQefElNF5qZ9Ix9a1L7ELkfvOig-Xn2P_6GmUU_RxLF9VA-SzYIYLKC938fkc2BEHh2I0nV9uwcsV/pub?output=csv';
+    // Firebase 구성 정보
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFda0Qg08bLdRMAwRmQc88aM_mG0sJccQ",
+      authDomain: "nongnong-web.firebaseapp.com",
+      projectId: "nongnong-web",
+      storageBucket: "nongnong-web.firebasestorage.app",
+      messagingSenderId: "760193644874",
+      appId: "1:760193644874:web:d0f940fbd878cadf4d69b3",
+      measurementId: "G-MDZ1C0T65E"
+    };
 
-    function login() {
-      const id = document.getElementById('userId').value.trim();
-      fetch(SHEET_CSV)
-        .then(res => res.text())
-        .then(csv => {
-          const rows = csv.trim().split('\n').map(r => r.split(','));
-          const userRow = rows.find(row => row[0] === id);
-          if (userRow) {
-            const nickname = userRow[1];
-            localStorage.setItem('userId', id);
-            localStorage.setItem('nickname', nickname);
-            window.location.href = 'profile.html';
-          } else {
-            alert('아이디가 틀립니다. 까먹었을 시 팀장에게 갠톡을 주세요.');
+    // Firebase 초기화
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // 로그인 함수
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      if (!username) {
+        alert("아이디를 입력해주세요.");
+        return;
+      }
+
+      const email = username + "@custom.com";  // 가상의 이메일
+      const password = "defaultPassword";      // 고정 비밀번호
+
+      try {
+        // 로그인 시도
+        await auth.signInWithEmailAndPassword(email, password);
+        alert("로그인 성공!");
+        localStorage.setItem("username", username); // 로그인 유저 저장
+        window.location.href = "main.html"; // 로그인 후 이동할 페이지
+      } catch (error) {
+        if (error.code === "auth/user-not-found") {
+          // 회원가입 처리
+          try {
+            await auth.createUserWithEmailAndPassword(email, password);
+            alert("회원가입 후 로그인 성공!");
+            localStorage.setItem("username", username);
+            window.location.href = "main.html";
+          } catch (signupError) {
+            alert("회원가입 실패: " + signupError.message);
           }
-        });
+        } else {
+          alert("로그인 오류: " + error.message);
+        }
+      }
     }
   </script>
 </body>
