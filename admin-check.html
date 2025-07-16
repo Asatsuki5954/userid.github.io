@@ -1,23 +1,66 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>관리자 인증</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: #e0f7ff;
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .admin-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    input[type="password"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+      border: 1px solid #87ceeb;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #87ceeb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00bfff;
+    }
+  </style>
 </head>
 <body>
-  <h2>회원가입 관리자 확인</h2>
-  <input type="password" id="adminPass" placeholder="관리자 비밀번호">
-  <button onclick="verify()">확인</button>
+  <div class="admin-box">
+    <h2>회원가입 관리자 확인</h2>
+    <input type="password" id="adminPass" placeholder="관리자 비밀번호 입력" />
+    <button id="checkBtn">확인</button>
+  </div>
 
   <script>
-    function verify() {
-      const password = document.getElementById("adminPass").value;
-      if (password === "nongww") {
+    document.getElementById("checkBtn").addEventListener("click", () => {
+      const pass = document.getElementById("adminPass").value;
+      if (pass === "nongww") {
         window.location.href = "register.html";
       } else {
         alert("비밀번호가 틀렸습니다.");
       }
-    }
+    });
   </script>
 </body>
 </html>
