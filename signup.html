@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>회원가입</title>
+  <style>
+    body {
+      background: #f0fff0;
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 220px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #90ee90;
+    }
+    button {
+      background: #32cd32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #228b22;
+    }
+  </style>
+</head>
+<body>
+  <div id="adminCheckBox" class="box" style="display: flex;">
+    <h3>관리자 비밀번호 입력</h3>
+    <input type="password" id="adminKey" placeholder="비밀번호" />
+    <button onclick="checkAdmin()">확인</button>
+  </div>
+
+  <div id="signupBox" class="box">
+    <h2>회원가입</h2>
+    <input type="text" id="userId" placeholder="아이디 입력 (예: honggildong)" />
+    <input type="password" id="userPassword" placeholder="비밀번호 입력" />
+    <button onclick="signup()">회원가입</button>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFda0Qg08bLdRMAwRmQc88aM_mG0sJccQ",
+      authDomain: "nongnong-web.firebaseapp.com",
+      projectId: "nongnong-web",
+      storageBucket: "nongnong-web.firebasestorage.app",
+      messagingSenderId: "760193644874",
+      appId: "1:760193644874:web:d0f940fbd878cadf4d69b3",
+      measurementId: "G-MDZ1C0T65E"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function checkAdmin() {
+      const adminKey = document.getElementById("adminKey").value;
+      if (adminKey === "nongww") {
+        document.getElementById("adminCheckBox").style.display = "none";
+        document.getElementById("signupBox").style.display = "flex";
+      } else {
+        alert("관리자 비밀번호가 올바르지 않습니다.");
+      }
+    }
+
+    function signup() {
+      const userId = document.getElementById("userId").value.trim();
+      const password = document.getElementById("userPassword").value;
+      const email = `${userId}@nong.com`;
+
+      if (!userId || !password) {
+        alert("아이디와 비밀번호를 모두 입력해주세요.");
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          alert("회원가입 성공!");
+          window.location.href = "login.html";
+        })
+        .catch((error) => {
+          alert("회원가입 실패: " + error.message);
+        });
+    }
+  </script>
+</body>
+</html>
